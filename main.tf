@@ -104,21 +104,21 @@ module "vm" {
   datacenter    = coalesce(each.value.datacenter, var.datacenter)
   cluster       = coalesce(each.value.cluster, var.cluster)
   datastore     = coalesce(each.value.datastore, var.datastore)
-  resource_pool = try(each.value.resource_pool, var.resource_pool)
-  vm_folder     = try(each.value.vm_folder, var.vm_folder)
+  resource_pool = each.value.resource_pool != null ? each.value.resource_pool : var.resource_pool
+  vm_folder     = each.value.vm_folder != null ? each.value.vm_folder : var.vm_folder
 
   # VM identity
   vm_name       = each.key
-  computer_name = try(each.value.computer_name, each.key)
-  annotation    = try(each.value.annotation, var.annotation)
-  tags          = try(each.value.tags, var.tags)
+  computer_name = each.value.computer_name != null ? each.value.computer_name : each.key
+  annotation    = each.value.annotation != null ? each.value.annotation : var.annotation
+  tags          = coalesce(each.value.tags, var.tags)
 
   # Template
   template_name = coalesce(each.value.template_name, var.template_name)
 
   # CPU
   num_cpus             = coalesce(each.value.num_cpus, var.num_cpus)
-  num_cores_per_socket = try(each.value.num_cores_per_socket, var.num_cores_per_socket)
+  num_cores_per_socket = each.value.num_cores_per_socket != null ? each.value.num_cores_per_socket : var.num_cores_per_socket
   cpu_hot_add_enabled  = coalesce(each.value.cpu_hot_add_enabled, var.cpu_hot_add_enabled)
 
   # Memory
@@ -133,22 +133,22 @@ module "vm" {
   # Networking
   network_interfaces = coalesce(each.value.network_interfaces, var.network_interfaces)
   ip_settings        = coalesce(each.value.ip_settings, var.ip_settings)
-  ipv4_gateway       = try(each.value.ipv4_gateway, var.ipv4_gateway)
+  ipv4_gateway       = each.value.ipv4_gateway != null ? each.value.ipv4_gateway : var.ipv4_gateway
   dns_servers        = coalesce(each.value.dns_servers, var.dns_servers)
   dns_suffix_list    = coalesce(each.value.dns_suffix_list, var.dns_suffix_list)
 
   # Guest OS
   is_windows = false
-  guest_id   = try(each.value.guest_id, var.guest_id)
-  domain     = try(each.value.domain, var.domain)
+  guest_id   = each.value.guest_id != null ? each.value.guest_id : var.guest_id
+  domain     = each.value.domain != null ? each.value.domain : var.domain
   time_zone  = coalesce(each.value.time_zone, var.time_zone)
 
   # Concatenate the automated domain join script with any per-VM script.
-  linux_script_text = trimspace("${local.domain_join_script}\n${try(each.value.linux_script_text, var.linux_script_text, "")}")
+  linux_script_text = trimspace("${local.domain_join_script}\n${each.value.linux_script_text != null ? each.value.linux_script_text : (var.linux_script_text != null ? var.linux_script_text : "")}")
 
   # Hardware
   firmware                    = coalesce(each.value.firmware, var.firmware)
-  hardware_version            = try(each.value.hardware_version, var.hardware_version)
+  hardware_version            = each.value.hardware_version != null ? each.value.hardware_version : var.hardware_version
   tools_upgrade_policy        = coalesce(each.value.tools_upgrade_policy, var.tools_upgrade_policy)
   enable_disk_uuid            = coalesce(each.value.enable_disk_uuid, var.enable_disk_uuid)
   wait_for_guest_net_timeout  = coalesce(each.value.wait_for_guest_net_timeout, var.wait_for_guest_net_timeout)
