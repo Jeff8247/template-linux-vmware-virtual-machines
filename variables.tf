@@ -91,11 +91,7 @@ variable "vms" {
     customize_timeout           = optional(number)
     extra_config                = optional(map(string))
   }))
-  default = {
-    "linux-app-01" = {}
-    "linux-app-02" = {}
-    "linux-app-03" = {}
-  }
+  default = {}
 
   validation {
     condition     = length(var.vms) > 0
