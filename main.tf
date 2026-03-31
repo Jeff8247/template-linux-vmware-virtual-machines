@@ -51,6 +51,7 @@ locals {
     domains = ${local._dj_domain}
     config_file_version = 2
     services = nss, pam
+    ad_enabled_domains = ${local._dj_domain}
     EOF
 
     chmod 600 /etc/sssd/sssd.conf "/etc/sssd/conf.d/01_${local._dj_domain}.conf"
@@ -98,7 +99,7 @@ locals {
 
 module "vm" {
   for_each = var.vms
-  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.8"
+  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.9"
 
   # Infrastructure placement
   datacenter    = coalesce(each.value.datacenter, var.datacenter)
