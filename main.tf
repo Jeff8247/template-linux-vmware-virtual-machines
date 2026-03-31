@@ -99,7 +99,7 @@ locals {
 
 module "vm" {
   for_each = var.vms
-  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.9"
+  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.10"
 
   # Infrastructure placement
   datacenter    = coalesce(each.value.datacenter, var.datacenter)
