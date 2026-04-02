@@ -277,41 +277,6 @@ variable "dns_suffix_list" {
   default     = []
 }
 
-# ─── Domain Join ─────────────────────────────────────────────────────────────
-# These variables use the same names as the Windows deploy so that a single
-# shared tfvars file can drive both Linux and Windows deployments simultaneously.
-
-variable "windows_domain" {
-  description = "AD domain to join (e.g. corp.example.com)"
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_netbios" {
-  description = "NetBIOS name of the domain (e.g. CORP)"
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_user" {
-  description = "AD user with join permissions"
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_password" {
-  description = "Password for domain join user"
-  type        = string
-  sensitive   = true
-  default     = null
-}
-
-variable "windows_domain_ou" {
-  description = "OU distinguished name for the computer object"
-  type        = string
-  default     = null
-}
-
 # ─── First-Boot Automation ────────────────────────────────────────────────────
 
 variable "guest_id" {

@@ -1,6 +1,6 @@
 module "vm" {
   for_each = var.vms
-  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.14"
+  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.15"
 
   # Infrastructure placement
   datacenter    = coalesce(each.value.datacenter, var.datacenter)
@@ -44,13 +44,6 @@ module "vm" {
   guest_id   = each.value.guest_id != null ? each.value.guest_id : var.guest_id
   domain     = each.value.domain != null ? each.value.domain : var.domain
   time_zone  = coalesce(each.value.time_zone, var.time_zone)
-
-  # Domain join
-  windows_domain          = var.windows_domain
-  windows_domain_user     = var.windows_domain_user
-  windows_domain_password = var.windows_domain_password
-  windows_domain_ou       = var.windows_domain_ou
-  windows_domain_netbios  = var.windows_domain_netbios
 
   linux_script_text = each.value.linux_script_text != null ? each.value.linux_script_text : var.linux_script_text
 
