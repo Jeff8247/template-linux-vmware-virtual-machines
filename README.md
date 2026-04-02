@@ -153,7 +153,7 @@ vms = {
 }
 ```
 
-> **Note:** Do not include a `#!/bin/bash` shebang in `linux_script_text` — the domain join script prepends one. If domain join is disabled the shebang is added automatically.
+> **Note:** Do not include a `#!/bin/bash` shebang in `linux_script_text` — the module prepends one when domain join is active.
 
 ## Variable Reference
 
@@ -327,7 +327,7 @@ These variables use `windows_domain*` names so that a single shared `terraform.t
 | `windows_domain_password` | `string` | `null` | Domain join password (sensitive) — set via `TF_VAR_windows_domain_password` |
 | `windows_domain_ou` | `string` | `null` | OU distinguished name for the computer object. `null` uses the default Computers container |
 
-When `windows_domain` and `windows_domain_password` are set, the template automatically constructs and runs a `realmd`/`sssd` join script during customization. The script installs required packages, joins the domain, configures SSSD, Kerberos, and applies PAM hardening to disable null password logins.
+When `windows_domain` and `windows_domain_password` are set, the module automatically constructs and runs a `realmd`/`sssd` join script during customization. The script is idempotent (skips if already joined), retries the join up to 5 times, installs required packages, configures SSSD and Kerberos, and hardens PAM to disable null password logins. It targets RHEL-family systems.
 
 ### Hardware
 
@@ -369,7 +369,7 @@ default_ip_addresses = {
 
 ```
 .
-├── main.tf                    # Domain join locals, module call with for_each
+├── main.tf                    # Module call with for_each
 ├── variables.tf               # All input variables with validation
 ├── outputs.tf                 # Map outputs keyed by VM name
 ├── versions.tf                # Terraform and provider version constraints
