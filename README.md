@@ -73,7 +73,7 @@ vsphere_user   = "administrator@vsphere.local"
 datacenter    = "dc01"
 cluster       = "cluster01"
 datastore     = "datastore01"
-template_name = "ubuntu-22.04-template"
+template_name = "rhel9-soe-template"
 
 network_interfaces = [{ network_name = "VM Network" }]
 
@@ -128,7 +128,7 @@ vms = {
 
 ### Active Directory domain join
 
-The template automatically constructs and runs a `realmd`/`sssd` domain join script during guest customization when `windows_domain` and `windows_domain_password` are set. The script detects the package manager at runtime and works on both RHEL-family and Debian/Ubuntu guests.
+The template automatically constructs and runs a `realmd`/`sssd` domain join script during guest customization when `windows_domain` and `windows_domain_password` are set. The script targets RHEL-family systems.
 
 > **Note:** The domain join variables use `windows_domain*` names intentionally — this allows a single shared `terraform.tfvars` file to drive both this template and the Windows multi-VM template simultaneously.
 
@@ -148,7 +148,7 @@ windows_domain_ou      = "OU=AppServers,OU=Servers,DC=corp,DC=example,DC=com"
 vms = {
   "linux-app-01" = {
     linux_script_text = <<-EOT
-      apt-get install -y nginx
+      dnf install -y nginx
       systemctl enable nginx
     EOT
   }
@@ -213,7 +213,7 @@ tags = {
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `template_name` | `string` | `"template-ubuntu-22.04-lts"` | vSphere template to clone |
+| `template_name` | `string` | `"template-rhel9-soe"` | vSphere template to clone |
 
 ### CPU
 
@@ -295,11 +295,8 @@ Common `guest_id` values:
 
 | OS | `guest_id` |
 |----|-----------|
-| Ubuntu 24.04 | `ubuntu64Guest` |
-| Ubuntu 22.04 | `ubuntu64Guest` |
 | RHEL 9 | `rhel9_64Guest` |
 | RHEL 8 | `rhel8_64Guest` |
-| Debian 12 | `debian12_64Guest` |
 | Rocky Linux 9 | `rockylinux_64Guest` |
 | AlmaLinux 9 | `almalinux_64Guest` |
 
