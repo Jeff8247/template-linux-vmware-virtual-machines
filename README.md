@@ -22,6 +22,7 @@ $EDITOR terraform.tfvars
 # 2. Set credentials via environment variables (recommended — avoids storing them in files)
 export TF_VAR_vsphere_password="..."
 export TF_VAR_windows_domain_password="..."   # only if joining AD
+export TF_VAR_proxy_url="..."                 # only if a proxy is required for package installs
 
 # 3. Initialize and deploy
 terraform init
@@ -36,6 +37,7 @@ Passwords should **not** be stored in `terraform.tfvars`. Use environment variab
 ```bash
 export TF_VAR_vsphere_password="your-vcenter-password"
 export TF_VAR_windows_domain_password="your-domain-join-password"   # if joining AD
+export TF_VAR_proxy_url="http://proxy.corp.example.com:8080"        # if proxy needed for package installs
 ```
 
 The `.gitignore` in this repo excludes `terraform.tfvars` and `*.auto.tfvars` to prevent accidental commits of credentials.
@@ -326,6 +328,7 @@ These variables use `windows_domain*` names so that a single shared `terraform.t
 | `windows_domain_user` | `string` | `null` | AD user with machine join permissions |
 | `windows_domain_password` | `string` | `null` | Domain join password (sensitive) — set via `TF_VAR_windows_domain_password` |
 | `windows_domain_ou` | `string` | `null` | OU distinguished name for the computer object. `null` uses the default Computers container |
+| `proxy_url` | `string` | `null` | HTTP/HTTPS proxy URL for the package install step (e.g. `http://proxy.corp.example.com:8080`). Set via `TF_VAR_proxy_url`. Overridden per-VM via `vms[].proxy_url` |
 
 When `windows_domain` and `windows_domain_password` are set, the module automatically constructs and runs a `realmd`/`sssd` join script during customization. The script is idempotent (skips if already joined), retries the join up to 5 times, installs required packages, configures SSSD and Kerberos, and hardens PAM to disable null password logins. It targets RHEL-family systems.
 

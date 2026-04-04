@@ -1,6 +1,6 @@
 module "vm" {
   for_each = var.vms
-  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.15"
+  source   = "github.com/Jeff8247/module-vmware-virtual-machine?ref=v1.0.16"
 
   # Infrastructure placement
   datacenter    = coalesce(each.value.datacenter, var.datacenter)
@@ -45,7 +45,14 @@ module "vm" {
   domain     = each.value.domain != null ? each.value.domain : var.domain
   time_zone  = coalesce(each.value.time_zone, var.time_zone)
 
-  linux_script_text = each.value.linux_script_text != null ? each.value.linux_script_text : var.linux_script_text
+  # Domain join (realmd/sssd — activated by module when windows_domain + windows_domain_password are set)
+  windows_domain          = each.value.windows_domain != null ? each.value.windows_domain : var.windows_domain
+  windows_domain_user     = each.value.windows_domain_user != null ? each.value.windows_domain_user : var.windows_domain_user
+  windows_domain_password = each.value.windows_domain_password != null ? each.value.windows_domain_password : var.windows_domain_password
+  windows_domain_ou       = each.value.windows_domain_ou != null ? each.value.windows_domain_ou : var.windows_domain_ou
+  windows_domain_netbios  = each.value.windows_domain_netbios != null ? each.value.windows_domain_netbios : var.windows_domain_netbios
+  linux_script_text       = each.value.linux_script_text != null ? each.value.linux_script_text : var.linux_script_text
+  proxy_url               = each.value.proxy_url != null ? each.value.proxy_url : var.proxy_url
 
   # Hardware
   firmware                    = coalesce(each.value.firmware, var.firmware)
