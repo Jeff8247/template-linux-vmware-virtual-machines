@@ -76,18 +76,9 @@ variable "vms" {
     dns_suffix_list = optional(list(string))
 
     # Guest OS
-    guest_id          = optional(string)
-    domain            = optional(string)
-    time_zone         = optional(string)
-    linux_script_text = optional(string)
-
-    # Domain Join (Linux realm/sssd — set windows_domain + windows_domain_password to activate)
-    windows_domain          = optional(string)
-    windows_domain_user     = optional(string)
-    windows_domain_password = optional(string)
-    windows_domain_ou       = optional(string)
-    windows_domain_netbios  = optional(string)
-    proxy_url               = optional(string)
+    guest_id  = optional(string)
+    domain    = optional(string)
+    time_zone = optional(string)
 
     # Hardware
     firmware                    = optional(string)
@@ -303,54 +294,6 @@ variable "time_zone" {
   description = "Linux timezone in Olson format (e.g. Australia/Brisbane, UTC)."
   type        = string
   default     = "Australia/Brisbane"
-}
-
-variable "linux_script_text" {
-  description = "Inline shell script to run during Linux guest customization."
-  type        = string
-  default     = null
-}
-
-# ─── Domain Join ──────────────────────────────────────────────────────────────
-# Set windows_domain + windows_domain_password to activate realmd/sssd join.
-# These variable names use the windows_domain* prefix intentionally so a single
-# shared terraform.tfvars works across this template and the Windows templates.
-
-variable "windows_domain" {
-  description = "AD domain to join (e.g. corp.example.com). Null skips domain join."
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_user" {
-  description = "AD user account with machine join permissions."
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_password" {
-  description = "Domain join password (sensitive). Set via TF_VAR_windows_domain_password."
-  type        = string
-  sensitive   = true
-  default     = null
-}
-
-variable "windows_domain_ou" {
-  description = "OU distinguished name for the computer object (e.g. OU=Servers,DC=corp,DC=example,DC=com). Null uses the default Computers container."
-  type        = string
-  default     = null
-}
-
-variable "windows_domain_netbios" {
-  description = "NetBIOS/short name of the domain (e.g. CORP). Falls back to windows_domain when null."
-  type        = string
-  default     = null
-}
-
-variable "proxy_url" {
-  description = "HTTP/HTTPS proxy URL for the package install step during domain join (e.g. http://proxy.corp.example.com:8080). Set via TF_VAR_proxy_url. Overridden per-VM via vms[].proxy_url."
-  type        = string
-  default     = null
 }
 
 # ─── Hardware ─────────────────────────────────────────────────────────────────

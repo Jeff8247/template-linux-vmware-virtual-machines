@@ -19,10 +19,8 @@ A Linux VM template with VMware Tools installed must already exist in vCenter an
 cp terraform.tfvars.example terraform.tfvars
 $EDITOR terraform.tfvars
 
-# 2. Set credentials via environment variables (recommended — avoids storing them in files)
+# 2. Set credentials via environment variables
 export TF_VAR_vsphere_password="..."
-export TF_VAR_windows_domain_password="..."   # only if joining AD
-export TF_VAR_proxy_url="..."                 # only if a proxy is required for package installs
 
 # 3. Initialize and deploy
 terraform init
@@ -36,8 +34,6 @@ Passwords should **not** be stored in `terraform.tfvars`. Use environment variab
 
 ```bash
 export TF_VAR_vsphere_password="your-vcenter-password"
-export TF_VAR_windows_domain_password="your-domain-join-password"   # if joining AD
-export TF_VAR_proxy_url="http://proxy.corp.example.com:8080"        # if proxy needed for package installs
 ```
 
 The `.gitignore` in this repo excludes `terraform.tfvars` and `*.auto.tfvars` to prevent accidental commits of credentials.
@@ -128,34 +124,7 @@ vms = {
 
 ### Active Directory domain join
 
-The template automatically constructs and runs a `realmd`/`sssd` domain join script during guest customization when `windows_domain` and `windows_domain_password` are set. The script targets RHEL-family systems.
-
-> **Note:** The domain join variables use `windows_domain*` names intentionally — this allows a single shared `terraform.tfvars` file to drive both this template and the Windows multi-VM template simultaneously.
-
-```hcl
-windows_domain         = "corp.example.com"
-windows_domain_netbios = "CORP"
-windows_domain_user    = "svc-domainjoin@corp.example.com"
-windows_domain_ou      = "OU=AppServers,OU=Servers,DC=corp,DC=example,DC=com"
-# windows_domain_password via TF_VAR_windows_domain_password
-```
-
-### Per-VM first-boot script
-
-`linux_script_text` runs as root during guest customization, after the hostname and network have been applied. When domain join is also enabled, the per-VM script runs **after** the domain join script.
-
-```hcl
-vms = {
-  "linux-app-01" = {
-    linux_script_text = <<-EOT
-      dnf install -y nginx
-      systemctl enable nginx
-    EOT
-  }
-}
-```
-
-> **Note:** Do not include a `#!/bin/bash` shebang in `linux_script_text` — the module prepends one when domain join is active.
+AD domain join is handled by Ansible post-boot. The `domain` variable sets the DNS search suffix applied during guest customization only.
 
 ## Variable Reference
 
@@ -289,7 +258,6 @@ One entry per NIC, in the same order as `network_interfaces`. Leave `ip_settings
 | `guest_id` | `string` | inherited from template | vSphere guest OS identifier. Omit to inherit from the source template |
 | `domain` | `string` | `null` | DNS search domain suffix applied during customization (e.g. `corp.example.com`) |
 | `time_zone` | `string` | `"Australia/Brisbane"` | Linux timezone in Olson format |
-| `linux_script_text` | `string` | `null` | Inline shell script to run during guest customization. Runs after domain join when both are enabled. Do not include a shebang. |
 
 Common `guest_id` values:
 
@@ -313,21 +281,6 @@ Common `time_zone` values:
 | Sydney | `Australia/Sydney` |
 
 Full list: [IANA Time Zone Database](https://www.iana.org/time-zones)
-
-### Domain Join
-
-These variables use `windows_domain*` names so that a single shared `terraform.tfvars` can drive both this template and the [Windows multi-VM template](https://github.com/Jeff8247/template-windows-vmware-virtual-machines) simultaneously.
-
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `windows_domain` | `string` | `null` | AD domain to join (e.g. `corp.example.com`). `null` skips domain join |
-| `windows_domain_netbios` | `string` | `null` | NetBIOS name of the domain (e.g. `CORP`). Falls back to `windows_domain` if null |
-| `windows_domain_user` | `string` | `null` | AD user with machine join permissions |
-| `windows_domain_password` | `string` | `null` | Domain join password (sensitive) — set via `TF_VAR_windows_domain_password` |
-| `windows_domain_ou` | `string` | `null` | OU distinguished name for the computer object. `null` uses the default Computers container |
-| `proxy_url` | `string` | `null` | HTTP/HTTPS proxy URL for the package install step (e.g. `http://proxy.corp.example.com:8080`). Set via `TF_VAR_proxy_url`. Overridden per-VM via `vms[].proxy_url` |
-
-When `windows_domain` and `windows_domain_password` are set, the module automatically constructs and runs a `realmd`/`sssd` join script during customization. The script is idempotent (skips if already joined), retries the join up to 5 times, installs required packages, configures SSSD and Kerberos, and hardens PAM to disable null password logins. It targets RHEL-family systems.
 
 ### Hardware
 
@@ -380,7 +333,7 @@ default_ip_addresses = {
 
 ## Security Notes
 
-- `vsphere_password` and `windows_domain_password` are marked `sensitive = true` and will not appear in plan/apply output.
+- `vsphere_password` is marked `sensitive = true` and will not appear in plan/apply output.
 - `terraform.tfvars` is excluded by `.gitignore` to prevent accidental credential commits. All passwords should be passed via `TF_VAR_*` environment variables — the resulting `terraform.tfvars` contains no sensitive values and should be committed to track the deployed configuration.
 - `vsphere_allow_unverified_ssl` defaults to `false`. Only set to `true` in non-production lab environments.
 - Terraform state (`terraform.tfstate`) contains all resource attributes including sensitive values. Store state in a secured remote backend (e.g. S3 with encryption, Terraform Cloud) for any shared or production use. See `versions.tf` for where to add a backend block.
